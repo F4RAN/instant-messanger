@@ -1,11 +1,17 @@
-from flask import Flask, render_template
+from flask import Flask, request
 from flask_socketio import SocketIO
+from sockets.v1.socket import routes
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
 
 sio = SocketIO(app)
 sio.init_app(app, cors_allowed_origins="*")
+routes(sio)
+
+
+
+
 
 
 @sio.on('message')
