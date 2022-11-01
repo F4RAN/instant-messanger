@@ -1,27 +1,27 @@
 # ui gitignore
-./ui/.DS_Store
-./ui/node_modules
-./ui//dist
+ui/.DS_Store
+ui/node_modules/*
+ui//dist
 
 
 # local env files
-./ui/.env.local
-./ui/.env.*.local
+ui/.env.local
+ui/.env.*.local
 
 # Log files
-./ui/npm-debug.log*
-./ui/yarn-debug.log*
-./ui/yarn-error.log*
-./ui/pnpm-debug.log*
+ui/npm-debug.log*
+ui/yarn-debug.log*
+ui/yarn-error.log*
+ui/pnpm-debug.log*
 
 # Editor directories and files
-./ui/.idea
-./ui/.vscode
-./ui/*.suo
-./ui/*.ntvs*
-./ui/*.njsproj
-./ui/*.sln
-./ui/*.sw?
+ui/.idea
+ui/.vscode
+ui/*.suo
+ui/*.ntvs*
+ui/*.njsproj
+ui/*.sln
+ui/*.sw?
 
 
 #Backend gitignore
