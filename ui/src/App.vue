@@ -1,7 +1,7 @@
 <template>
   <div id="app">
-hello
-<button type="" @click="test()">test</button>
+    hello
+    <button type="" @click="test()">test</button>
   </div>
 </template>
 
@@ -22,9 +22,17 @@ export default {
     }
   },
   mounted() {
-    this.socket = SocketIO('http://127.0.0.1:5000/')
+    this.socket = SocketIO('http://127.0.0.1:5000/',{
+  reconnectionDelayMax: 10000,
+  query: {
+    "token": "very_strong_token2"
+  }
+})
     this.socket.on('accepted',() => {
       console.log('server accepted your connection')
+    })
+    this.socket.on('rejected',() => {
+      console.error('server rejected your connection (auth failed)')
     })
   },
 }
