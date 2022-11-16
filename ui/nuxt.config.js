@@ -38,6 +38,8 @@ export default {
   modules: [
     // https://go.nuxtjs.dev/bootstrap
     'bootstrap-vue/nuxt',
+    ['cookie-universal-nuxt', { alias: 'cookiz' }],
+
   ],
 
   // Build Configuration: https://go.nuxtjs.dev/config-build

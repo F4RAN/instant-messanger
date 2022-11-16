@@ -1,7 +1,9 @@
 from flask import Flask, request
 from flask_socketio import SocketIO,emit
 from sockets.v1.socket import routes
+from config.mongo import connectIt
 
+connectIt()
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
 
