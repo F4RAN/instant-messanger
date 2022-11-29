@@ -1,6 +1,63 @@
 <template>
   <div class="body">
-    {{ user }}
+    <b-modal
+      id="add"
+      title="Add your friend"
+      hide-footer
+      @hide="
+        friendInfo = false;
+        friendPhoneNumber = '';
+        beforeAdded = false;
+      "
+    >
+      <div v-if="!friendInfo">
+        <div style="min-height: 200px">
+          <div style="min-height: 100px; width: 90%">
+            <div class="input-group">
+              <label for=""
+                ><i style="font-size: 17pt" class="fa fa-mobile mt-3 pt-1"></i
+              ></label>
+              <input
+                v-model="friendPhoneNumber"
+                style="margin: 0 !important"
+                type="text"
+                class="form-control"
+                placeholder="Enter your friend's phone number"
+                aria-label="Username"
+                aria-describedby="basic-addon1"
+              />
+            </div>
+          </div>
+        </div>
+        <div class="btn-group float-right" style="min-height: 50px">
+          <button style="height: 30px" class="btn btn-secondary fa fa-times"></button>
+          <button
+            style="height: 30px"
+            class="btn btn-success fa fa-check"
+            @click="checkFriend()"
+          ></button>
+        </div>
+      </div>
+      <div v-else style="position: relative; min-height: 100px">
+        <div v-if="friendsExist && !beforeAdded" class="jumbotron bg-success text-light">
+          congratulations! <b>{{ friendName }}</b> added to your friends list
+          successfully. :)
+        </div>
+        <div v-if="beforeAdded" class="jumbotron bg-secondary text-light">
+          Sorry! <b>{{ friendPhoneNumber }}</b> is added before in your friends list.
+        </div>
+        <div
+          v-if="!friendsExist && !beforeAdded"
+          class="jumbotron bg-secondary text-light"
+        >
+          Sorry! <b>{{ friendPhoneNumber }}</b> is not registered in instant messanger :(
+        </div>
+        <div style="position: absolute; bottom: 0px; right: 0; min-height: 40px">
+          <button class="btn btn-primary mt-4" @click="$bvModal.hide('add')">OK</button>
+        </div>
+      </div>
+    </b-modal>
+
     <!--It's just a concept, a chat UI design for direct messaging!
 Enjoy! :) Don't forget to click the heart if you like it! -->
 
@@ -58,7 +115,22 @@ Enjoy! :) Don't forget to click the heart if you like it! -->
           </div>
         </div>
       </div>
-      <div class="messages"></div>
+      <div class="messages" style="position: relative">
+        <button
+          @click="$bvModal.show('add')"
+          style="
+            position: absolute;
+            left: 5px;
+            top: 5px;
+            width: 50px;
+            height: 50px;
+            border-radius: 100%;
+          "
+          class="btn btn-primary"
+        >
+          <i class="fa fa-user-plus"></i>
+        </button>
+      </div>
       <div class="profile">
         <div class="avatar">
           <p>{{ user.name.slice(0, 1) }}</p>
@@ -90,21 +162,39 @@ Enjoy! :) Don't forget to click the heart if you like it! -->
 </template>
 
 <script>
-import SocketIO from "@/assets/socket.io.esm.min.js";
-
 export default {
   name: "App",
-  props: ["user"],
+  props: ["socket", "user"],
   data() {
     return {
-      socket: "",
+      friendInfo: false,
+      friendPhoneNumber: "",
+      friendName: "",
+      friendsExist: false,
+      beforeAdded: false,
     };
   },
   methods: {
-    test() {
-      this.socket.emit("message", "test");
-      console.log(this.socket);
+    checkFriend() {
+      let token = this.$cookiz.get("auth_token");
+      this.socket.emit("check_friend_phone", {
+        token: token,
+        phoneNumber: this.friendPhoneNumber,
+      });
     },
+  },
+  mounted() {
+    this.socket.on("get_friend_info", (friend_info) => {
+      this.friendInfo = true;
+      this.friendsExist = friend_info.status;
+      if (this.friendsExist) {
+        if (!friend_info.exist) {
+          this.friendName = friend_info.user;
+        } else {
+          this.beforeAdded = true;
+        }
+      }
+    });
   },
 };
 </script>
@@ -181,6 +271,7 @@ $dark: #777777;
   padding: 12px 0 12px 12px;
   border-bottom: 1px solid $primary;
   cursor: pointer;
+  background: #f9fbff4a;
   &:hover {
     background: $white;
     transition: all 0.3s ease-in-out;

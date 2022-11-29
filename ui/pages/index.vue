@@ -7,7 +7,7 @@
       "
       v-if="!isRegistered"
     ></Register>
-    <Chat :user="user" v-else></Chat>
+    <Chat :socket="socket" :user="user" v-else></Chat>
   </div>
 </template>
 <script>
@@ -19,6 +19,7 @@ export default {
       isRegistered: false,
       form: "",
       user: "",
+      socket: "",
     };
   },
   methods: {

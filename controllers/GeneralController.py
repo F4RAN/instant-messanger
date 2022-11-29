@@ -1,3 +1,5 @@
+import json
+
 import jwt
 from flask import request
 from app import emit
@@ -6,6 +8,17 @@ from models.user import User
 
 
 class GeneralController:
+
+    def check_friend_phone(self, params):
+        user = User.objects(token=params['token']).first()
+        friend = User.objects(phoneNumber=params['phoneNumber']).first()
+        if not bool(friend): return emit('get_friend_info', {'status': False, 'exist': False, 'user': ''})
+        for f in user.friends:
+            print(f,friend.id)
+            if f == str(friend.id): return emit('get_friend_info', {'status': True, 'exist': True, 'user': ''})
+        user.friends.append(str(friend.id))
+        user.save()
+        return emit('get_friend_info', json.loads(json.dumps({'status': True,'exist':False, 'user': friend.name})))
 
     def connect(self):
         token = request.args.get('token')
