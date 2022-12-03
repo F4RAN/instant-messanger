@@ -7,7 +7,7 @@ connectIt()
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
 
-sio = SocketIO(app)
+sio = SocketIO(app,logger=True,manage_session=False)
 sio.init_app(app, cors_allowed_origins="*")
 routes(sio)
 

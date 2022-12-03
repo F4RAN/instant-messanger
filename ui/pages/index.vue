@@ -7,7 +7,7 @@
       "
       v-if="!isRegistered"
     ></Register>
-    <Chat :socket="socket" :user="user" v-else></Chat>
+    <Chat :socket="socket" :user="user" :friends="friends" v-else></Chat>
   </div>
 </template>
 <script>
@@ -20,6 +20,8 @@ export default {
       form: "",
       user: "",
       socket: "",
+      token: "",
+      friends: [],
     };
   },
   methods: {
@@ -46,7 +48,12 @@ export default {
     });
     this.socket.on("get_token", (token) => {
       this.$cookiz.set("auth_token", token);
+      this.token = token;
       this.socket.emit("get_init_data");
+    });
+    this.socket.emit("get_friends");
+    this.socket.on("friends_list", (friends) => {
+      this.friends = friends;
     });
   },
 };

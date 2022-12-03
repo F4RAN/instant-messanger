@@ -62,10 +62,20 @@
 Enjoy! :) Don't forget to click the heart if you like it! -->
 
     <div class="container">
-      <div class="chatbox">
+      <div
+        class="chatbox-disabled d-flex justify-content-center align-items-center"
+        v-if="!selectedFriend"
+      >
+        <p class="bg-success p-3" style="opacity: 0.5; border-radius: 5px">
+          Select a chat or friend.
+        </p>
+      </div>
+      <div class="chatbox" v-if="selectedFriend">
         <div class="top-bar">
-          <div class="avatar"><p>V</p></div>
-          <div class="name">Voldemort</div>
+          <div class="avatar">
+            <p>{{ selectedFriend.name.slice(0, 1) }}</p>
+          </div>
+          <div class="name">{{ selectedFriend.name }}</div>
           <div class="icons">
             <i class="fas fa-phone"></i>
             <i class="fas fa-video"></i>
@@ -74,30 +84,27 @@ Enjoy! :) Don't forget to click the heart if you like it! -->
             <div class="dots"></div>
           </div>
         </div>
-        <div class="middle">
-          <div class="voldemort">
-            <div class="incoming">
-              <div class="bubble">Hey, Father's Day is coming up..</div>
-              <div class="bubble">What are you getting.. Oh, oops sorry dude.</div>
-            </div>
-            <div class="outgoing">
-              <div class="bubble lower">Nah, it's cool.</div>
-              <div class="bubble">
-                Well you should get your Dad a cologne. Here smell it. Oh wait! ...
-              </div>
-            </div>
-            <div class="typing">
-              <div class="bubble">
-                <div class="ellipsis one"></div>
-                <div class="ellipsis two"></div>
-                <div class="ellipsis three"></div>
+        <div class="middle" ref="cont">
+          <div v-for="msg in messages" :key="msg.index">
+            <div :class="msg.type == 'r' ? 'in d-flex bubble' : 'out d-flex'">
+              <div v-if="msg.type == 's'" style="min-width: 50%"></div>
+              <div
+                :class="msg.type == 's' ? 'bubble' : ''"
+                :style="msg.type == 's' ? { background: 'blue', 'min-width': '50%' } : ''"
+              >
+                {{ msg.message }}
               </div>
             </div>
           </div>
         </div>
         <div class="bottom-bar">
           <div class="chat">
-            <input type="text" placeholder="Type a message..." />
+            <input
+              @keyup.enter="sendMessage()"
+              v-model="message"
+              type="text"
+              placeholder="Type a message..."
+            />
             <img
               src="../static/send.png"
               style="
@@ -141,20 +148,15 @@ Enjoy! :) Don't forget to click the heart if you like it! -->
         </div>
       </div>
       <ul class="people">
-        <li class="person focus">
-          <span class="title">Voldemort </span>
+        <li
+          @click="selectedFriend = friend"
+          v-for="friend in friends"
+          :key="friend.phoneNumber"
+          class="person focus"
+        >
+          <span class="title">{{ friend.name }} </span>
           <span class="time">2:50pm</span><br />
           <span class="preview">What are you getting... Oh, oops...</span>
-        </li>
-        <li class="person">
-          <span class="title">Ron</span>
-          <span class="time">2:25pm</span><br />
-          <span class="preview">Meet me at Hogsmeade and bring...</span>
-        </li>
-        <li class="person">
-          <span class="title">Hermione</span>
-          <span class="time">2:12pm</span><br />
-          <span class="preview">Have you and Ron done your hom...</span>
         </li>
       </ul>
     </div>
@@ -164,7 +166,7 @@ Enjoy! :) Don't forget to click the heart if you like it! -->
 <script>
 export default {
   name: "App",
-  props: ["socket", "user"],
+  props: ["socket", "user", "friends"],
   data() {
     return {
       friendInfo: false,
@@ -172,9 +174,25 @@ export default {
       friendName: "",
       friendsExist: false,
       beforeAdded: false,
+      selectedFriend: "",
+      message: "",
+      messages: [],
     };
   },
   methods: {
+    sendMessage() {
+      let msg = {
+        message: this.message,
+        to: this.selectedFriend.id,
+        type: "s",
+      };
+
+      this.socket.emit("send_message", msg);
+      this.messages.push(msg);
+      this.message = "";
+      var container = this.$refs["cont"];
+      container.scrollTop = container.scrollHeight;
+    },
     checkFriend() {
       let token = this.$cookiz.get("auth_token");
       this.socket.emit("check_friend_phone", {
@@ -184,12 +202,25 @@ export default {
     },
   },
   mounted() {
+    console.log(this.socket);
+    this.socket.on("receive_message", (rmsg) => {
+      console.log("here");
+      let msg = {
+        message: rmsg.message,
+        from: rmsg.from,
+        type: "r",
+      };
+      this.messages.push(msg);
+      var container = this.$refs["cont"];
+      container.scrollTop = container.scrollHeight;
+    });
     this.socket.on("get_friend_info", (friend_info) => {
       this.friendInfo = true;
       this.friendsExist = friend_info.status;
       if (this.friendsExist) {
         if (!friend_info.exist) {
-          this.friendName = friend_info.user;
+          this.friendName = friend_info.user.name;
+          this.friends.push(friend_info.user);
         } else {
           this.beforeAdded = true;
         }
@@ -207,7 +238,14 @@ $primary: #79c7c5;
 $secondary: #a1e2d9;
 $white: #f9fbff;
 $dark: #777777;
-
+.in {
+  background: red;
+  max-width: 50%;
+}
+.out {
+  width: 100%;
+  background: transparent;
+}
 .html {
   display: grid;
   min-height: 100%;
@@ -314,6 +352,15 @@ $dark: #777777;
   border-radius: 10px;
   box-shadow: 5px 5px 15px rgba($dark, 0.5);
 }
+.chatbox-disabled {
+  background: #b6b6b668;
+  position: absolute;
+  left: 35%;
+  height: 75%;
+  width: 60%;
+  border-radius: 10px;
+  box-shadow: 5px 5px 15px rgba($dark, 0.5);
+}
 
 .top-bar {
   width: 100%;
@@ -387,11 +434,15 @@ $dark: #777777;
 
 .middle {
   position: absolute;
+  overflow: scroll;
   background: $white;
   width: 100%;
   opacity: 0.85;
   bottom: 60px;
   height: 80%;
+  padding: 60px;
+  padding-right: 0px;
+  padding-left: 0px;
 }
 
 .incoming {
