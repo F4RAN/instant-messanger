@@ -100,7 +100,15 @@ Enjoy! :) Don't forget to click the heart if you like it! -->
               <div
                 style="position: relative; padding-bottom: 20px"
                 :class="msg.type == 's' ? 'bubble' : ''"
-                :style="msg.type == 's' ? { background: 'blue', 'min-width': '50%' } : ''"
+                :style="
+                  msg.type == 's'
+                    ? {
+                        background: '#2176FF',
+                        'min-width': '50%',
+                        color: 'white',
+                      }
+                    : ''
+                "
               >
                 <div>
                   {{ msg.message }}
@@ -108,7 +116,7 @@ Enjoy! :) Don't forget to click the heart if you like it! -->
                     v-if="msg.type == 's'"
                     style="position: absolute; right: 15px; bottom: 1px"
                   >
-                    <span v-if="msg.id != 'Sending'" class="text-secondary"
+                    <span v-if="msg.id != 'Sending'" style="background: graysmoke"
                       >12:39 PM</span
                     >
                     <i v-if="msg.id != 'Sending'" class="fa fa-check"></i>
@@ -292,8 +300,9 @@ $secondary: #a1e2d9;
 $white: #f9fbff;
 $dark: #777777;
 .in {
-  background: red;
+  background: #f5f5f5;
   max-width: 50%;
+  color: black !important;
 }
 .out {
   width: 100%;
