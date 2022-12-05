@@ -85,14 +85,36 @@ Enjoy! :) Don't forget to click the heart if you like it! -->
           </div>
         </div>
         <div class="middle" ref="cont">
-          <div v-for="msg in messages" :key="msg.index">
+          <div
+            v-for="msg in selectedMessages"
+            :key="msg.id != 'Sending' ? msg.id : msg.index"
+          >
             <div :class="msg.type == 'r' ? 'in d-flex bubble' : 'out d-flex'">
+              <span
+                v-if="msg.type == 'r'"
+                style="position: absolute; right: 15px; bottom: 1px"
+                >12:39 PM</span
+              >
+
               <div v-if="msg.type == 's'" style="min-width: 50%"></div>
               <div
+                style="position: relative; padding-bottom: 20px"
                 :class="msg.type == 's' ? 'bubble' : ''"
                 :style="msg.type == 's' ? { background: 'blue', 'min-width': '50%' } : ''"
               >
-                {{ msg.message }}
+                <div>
+                  {{ msg.message }}
+                  <span
+                    v-if="msg.type == 's'"
+                    style="position: absolute; right: 15px; bottom: 1px"
+                  >
+                    <span v-if="msg.id != 'Sending'" class="text-secondary"
+                      >12:39 PM</span
+                    >
+                    <i v-if="msg.id != 'Sending'" class="fa fa-check"></i>
+                    <i v-else class="fa fa-circle-notch fa-spin"></i>
+                  </span>
+                </div>
               </div>
             </div>
           </div>
@@ -149,7 +171,7 @@ Enjoy! :) Don't forget to click the heart if you like it! -->
       </div>
       <ul class="people">
         <li
-          @click="selectedFriend = friend"
+          @click="selectFriend(friend)"
           v-for="friend in friends"
           :key="friend.phoneNumber"
           class="person focus"
@@ -175,13 +197,27 @@ export default {
       friendsExist: false,
       beforeAdded: false,
       selectedFriend: "",
+      selectedMessages: [],
       message: "",
       messages: [],
     };
   },
   methods: {
+    selectFriend(friend) {
+      if (friend.id == this.selectedFriend.id) return;
+      this.selectedMessages = [];
+      this.selectedFriend = friend;
+      this.messages.map((msg) => {
+        if (msg.from == this.selectedFriend.id || msg.to == this.selectedFriend.id) {
+          this.selectedMessages.push(msg);
+        }
+      });
+    },
     sendMessage() {
+      let selectedMessagesIndex = -1;
+      let messagesIndex = -1;
       let msg = {
+        id: "Sending",
         message: this.message,
         to: this.selectedFriend.id,
         type: "s",
@@ -189,9 +225,20 @@ export default {
 
       this.socket.emit("send_message", msg);
       this.messages.push(msg);
+      messagesIndex = this.messages.length;
+      if (msg.to == this.selectedFriend.id) {
+        this.selectedMessages.push(msg);
+        selectedMessagesIndex = this.selectedMessages.length;
+      }
       this.message = "";
       var container = this.$refs["cont"];
       container.scrollTop = container.scrollHeight;
+      this.socket.on("message_sent", (rmsg) => {
+        if (selectedMessagesIndex != -1) {
+          this.selectedMessages[selectedMessagesIndex - 1].id = rmsg.id;
+        }
+        this.messages[messagesIndex - 1].id = rmsg.id;
+      });
     },
     checkFriend() {
       let token = this.$cookiz.get("auth_token");
@@ -206,13 +253,19 @@ export default {
     this.socket.on("receive_message", (rmsg) => {
       console.log("here");
       let msg = {
+        id: rmsg.id,
         message: rmsg.message,
         from: rmsg.from,
         type: "r",
       };
       this.messages.push(msg);
+      if (this.selectedFriend && this.selectedFriend.id == msg.from) {
+        this.selectedMessages.push(msg);
+      }
       var container = this.$refs["cont"];
-      container.scrollTop = container.scrollHeight;
+      if (container) {
+        container.scrollTop = container.scrollHeight;
+      }
     });
     this.socket.on("get_friend_info", (friend_info) => {
       this.friendInfo = true;
@@ -441,8 +494,8 @@ $dark: #777777;
   bottom: 60px;
   height: 80%;
   padding: 60px;
-  padding-right: 0px;
-  padding-left: 0px;
+  padding-right: 5px;
+  padding-left: 5px;
 }
 
 .incoming {

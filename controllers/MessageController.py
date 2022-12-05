@@ -18,9 +18,17 @@ class MessageController:
         message = Message(f=str(fr.id) ,t=str(to.id), content=params['message'])
         message.save()
         msg_schema = {
+            'id':str(message.id),
             'message':params['message'],
             'from':str(fr.id),
             'to':'me'
         }
         un = sorted((str(fr.id), str(to.id)))
         emit("receive_message",json.loads(json.dumps(msg_schema)), room=un[0] + un[1] , include_self=False)
+        msg_schema = {
+            'id': str(message.id),
+            'message':params['message'],
+            'from':'me',
+            'to':str(fr.id),
+        }
+        emit("message_sent",json.loads(json.dumps(msg_schema)))
