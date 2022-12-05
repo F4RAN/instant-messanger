@@ -90,10 +90,10 @@ Enjoy! :) Don't forget to click the heart if you like it! -->
             :key="msg.id != 'Sending' ? msg.id : msg.index"
           >
             <div :class="msg.type == 'r' ? 'in d-flex bubble' : 'out d-flex'">
-              <span
+              <small
                 v-if="msg.type == 'r'"
                 style="position: absolute; right: 15px; bottom: 1px"
-                >12:39 PM</span
+                >12:39 PM</small
               >
 
               <div v-if="msg.type == 's'" style="min-width: 50%"></div>
@@ -116,8 +116,8 @@ Enjoy! :) Don't forget to click the heart if you like it! -->
                     v-if="msg.type == 's'"
                     style="position: absolute; right: 15px; bottom: 1px"
                   >
-                    <span v-if="msg.id != 'Sending'" style="background: graysmoke"
-                      >12:39 PM</span
+                    <small v-if="msg.id != 'Sending'" style="background: graysmoke"
+                      >12:39 PM</small
                     >
                     <i v-if="msg.id != 'Sending'" class="fa fa-check"></i>
                     <i v-else class="fa fa-circle-notch fa-spin"></i>
@@ -182,7 +182,8 @@ Enjoy! :) Don't forget to click the heart if you like it! -->
           @click="selectFriend(friend)"
           v-for="friend in friends"
           :key="friend.phoneNumber"
-          class="person focus"
+          class="person"
+          :class="friend == selectedFriend ? 'focus' : ''"
         >
           <span class="title">{{ friend.name }} </span>
           <span class="time">2:50pm</span><br />
@@ -222,31 +223,23 @@ export default {
       });
     },
     sendMessage() {
-      let selectedMessagesIndex = -1;
-      let messagesIndex = -1;
       let msg = {
         id: "Sending",
         message: this.message,
         to: this.selectedFriend.id,
+        index: this.selectedMessages.length,
+        all_index: this.messages.length,
         type: "s",
       };
 
       this.socket.emit("send_message", msg);
       this.messages.push(msg);
-      messagesIndex = this.messages.length;
       if (msg.to == this.selectedFriend.id) {
         this.selectedMessages.push(msg);
-        selectedMessagesIndex = this.selectedMessages.length;
       }
       this.message = "";
       var container = this.$refs["cont"];
       container.scrollTop = container.scrollHeight;
-      this.socket.on("message_sent", (rmsg) => {
-        if (selectedMessagesIndex != -1) {
-          this.selectedMessages[selectedMessagesIndex - 1].id = rmsg.id;
-        }
-        this.messages[messagesIndex - 1].id = rmsg.id;
-      });
     },
     checkFriend() {
       let token = this.$cookiz.get("auth_token");
@@ -257,7 +250,12 @@ export default {
     },
   },
   mounted() {
-    console.log(this.socket);
+    this.socket.on("message_sent", (rmsg) => {
+      this.selectedMessages[rmsg.index].id = rmsg.id;
+      this.selectedMessages[rmsg.index].message = rmsg.message;
+      this.messages[rmsg.all_index].id = rmsg.id;
+      this.messages[rmsg.all_index].message = rmsg.message;
+    });
     this.socket.on("receive_message", (rmsg) => {
       console.log("here");
       let msg = {
@@ -411,6 +409,7 @@ $dark: #777777;
   left: 35%;
   height: 75%;
   width: 60%;
+  background: white;
   border-radius: 10px;
   box-shadow: 5px 5px 15px rgba($dark, 0.5);
 }
