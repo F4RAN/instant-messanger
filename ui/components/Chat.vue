@@ -119,8 +119,12 @@ Enjoy! :) Don't forget to click the heart if you like it! -->
                     <small v-if="msg.id != 'Sending'" style="background: graysmoke"
                       >12:39 PM</small
                     >
-                    <i v-if="msg.id != 'Sending'" class="fa fa-check"></i>
-                    <i v-else class="fa fa-circle-notch fa-spin"></i>
+                    <i v-if="msg.id != 'Sending' && !msg.seen" class="fa fa-check"></i>
+                    <i
+                      v-if="msg.id != 'Sending' && msg.seen"
+                      class="fa fa-check-double"
+                    ></i>
+                    <i v-if="msg.id == 'Sending'" class="fa fa-circle-notch fa-spin"></i>
                   </span>
                 </div>
               </div>
@@ -221,6 +225,7 @@ export default {
           this.selectedMessages.push(msg);
         }
       });
+      this.socket.emit("seen_friend_message", this.selectedFriend.id);
     },
     sendMessage() {
       let msg = {
@@ -229,6 +234,7 @@ export default {
         to: this.selectedFriend.id,
         index: this.selectedMessages.length,
         all_index: this.messages.length,
+        seen: false,
         type: "s",
       };
 
@@ -250,6 +256,31 @@ export default {
     },
   },
   mounted() {
+    this.socket.on("friend_seen", (id) => {
+      this.selectedMessages.map((msg) => {
+        console.log(msg.to, id);
+        if (msg.to == id) {
+          msg.seen = true;
+        }
+      });
+      this.messages.map((msg) => {
+        if (msg.to == id) {
+          msg.seen = true;
+        }
+      });
+    });
+    this.socket.on("double_check", (id) => {
+      this.selectedMessages.map((msg) => {
+        if (msg.id == id) {
+          msg.seen = true;
+        }
+      });
+      this.messages.map((msg) => {
+        if (msg.id == id) {
+          msg.seen = true;
+        }
+      });
+    });
     this.socket.on("message_sent", (rmsg) => {
       this.selectedMessages[rmsg.index].id = rmsg.id;
       this.selectedMessages[rmsg.index].message = rmsg.message;
@@ -257,16 +288,17 @@ export default {
       this.messages[rmsg.all_index].message = rmsg.message;
     });
     this.socket.on("receive_message", (rmsg) => {
-      console.log("here");
       let msg = {
         id: rmsg.id,
         message: rmsg.message,
         from: rmsg.from,
+        seen: false,
         type: "r",
       };
       this.messages.push(msg);
       if (this.selectedFriend && this.selectedFriend.id == msg.from) {
         this.selectedMessages.push(msg);
+        this.socket.emit("seen_message", msg);
       }
       var container = this.$refs["cont"];
       if (container) {

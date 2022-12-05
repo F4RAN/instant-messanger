@@ -9,5 +9,5 @@ class Message(Document):
     has_multimedia = BooleanField(default=False)
     multimedia = StringField(default="")
     type = StringField(default="person")  # Can be group or channel
-    cencored = BooleanField(default=False)
+    seen = BooleanField(default=False)
     created = DateTimeField(default=datetime.datetime.utcnow())
