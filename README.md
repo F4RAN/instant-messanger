@@ -13,18 +13,20 @@ server emit back message to other end user (include filtered words),
 
 ## Additional FEATURES:
 
-1- Message time, 
+1- Messages stores in the database,
 
-2- friends show, 
+2- Messages creation time, 
 
-3- latest message of each friend, 
+3- Representation of friends list,
 
-4- Authentication with phone number and set cookie for future login,
+4- latest message of each friend representation, 
 
-5- Show unread messages in a counter in the corner of friend's card, 
+5- Register and Authentication with mobile number and set cookie for future login (JWT),
 
-6- Add friends to the friends list with phone number, 
+6- Show unread messages on a counter in the corner of a friend's card,
 
-7- show sent messages by check sign and seen messages by double check sign
+7- Add friends to the friends list with phone number, 
 
-8- when you chatting with a friend messanger can keep message from other firends,
+9- representation of sent messages by check sign and seen messages by double check sign,
+
+10- when you chatting with a friend messanger can keep the message from other friends,
