@@ -1,6 +1,6 @@
 # instant-messanger
 
-## Basic Features:
+## Basic FEATURES:
 
 implement a socket io messanger
 
@@ -26,3 +26,5 @@ server emit back message to other end user (include filtered words),
 6- Add friends to the friends list with phone number, 
 
 7- show sent messages by check sign and seen messages by double check sign
+
+8- when you chatting with a friend messanger can keep message from other firends,
