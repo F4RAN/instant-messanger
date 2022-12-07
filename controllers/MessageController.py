@@ -1,7 +1,10 @@
 import json
 
 import flask_socketio
+from bson import json_util
 from flask import request
+from mongoengine import Q
+
 from app import emit
 from models.message import Message
 from models.socket import Socket
@@ -10,6 +13,29 @@ import jwt
 
 
 class MessageController:
+    def get_messages_history(self):
+        token = request.args.get('token')
+        me = User.objects(token=token).first()
+        print(str(me.id))
+        messages = Message.objects.filter(Q(t=str(me.id)) | Q(f=str(me.id))).order_by('created').as_pymongo()
+        counter = 0
+        history_schema =[]
+        # Limit messages per user
+        limitation_value = 10
+        print(messages)
+        for friend in me.friends:
+            for i in range(len(messages)):
+                if messages[len(messages) - 1 - i]['t'] == friend or messages[len(messages) - 1 - i]['f'] == friend:
+                    counter+=1
+                    history_schema.append(messages[len(messages) - 1 - i])
+                if counter == limitation_value:
+                    break
+
+            counter = 0
+        emit('messages_history',json.loads(json_util.dumps(reversed(history_schema))))
+
+
+
     def seen_friend_messages(self, fr_id):
         token = request.args.get('token')
         me = User.objects(token=token).first()

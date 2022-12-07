@@ -7,7 +7,13 @@
       "
       v-if="!isRegistered"
     ></Register>
-    <Chat :socket="socket" :user="user" :friends="friends" v-else></Chat>
+    <Chat
+      :socket="socket"
+      :user="user"
+      :friends="friends"
+      :history="history"
+      v-else
+    ></Chat>
   </div>
 </template>
 <script>
@@ -22,6 +28,7 @@ export default {
       socket: "",
       token: "",
       friends: [],
+      history: [],
     };
   },
   methods: {
@@ -54,6 +61,10 @@ export default {
     this.socket.emit("get_friends");
     this.socket.on("friends_list", (friends) => {
       this.friends = friends;
+    });
+    this.socket.emit("get_messages_history");
+    this.socket.on("messages_history", (msgs) => {
+      this.history = msgs;
     });
   },
 };

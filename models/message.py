@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime
 from mongoengine import *
 
 
@@ -10,4 +10,4 @@ class Message(Document):
     multimedia = StringField(default="")
     type = StringField(default="person")  # Can be group or channel
     seen = BooleanField(default=False)
-    created = DateTimeField(default=datetime.datetime.utcnow())
+    created = DateTimeField(default=datetime.utcnow)

@@ -62,6 +62,7 @@ class GeneralController:
 
             if len(my_user) == 0: return emit('rejected')
             initial_data = {
+                'id': str(my_user[0]['_id']),
                 'name': my_user[0]['name'],
                 'phone_number': my_user[0]['phoneNumber']
             }  # + friends list + latest 10 messages from all friends

@@ -17,6 +17,7 @@ def routes(sio):
     sio.on('send_message')(MessageController().send_message)
     sio.on('seen_message')(MessageController().seen_message) # Clients are chatting
     sio.on('seen_friend_message')(MessageController().seen_friend_messages) # After select friend
+    sio.on('get_messages_history')(MessageController().get_messages_history) # After select friend
 
 
 

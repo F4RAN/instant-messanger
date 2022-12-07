@@ -228,7 +228,7 @@ import moment from "moment";
 
 export default {
   name: "App",
-  props: ["socket", "user", "friends"],
+  props: ["socket", "user", "friends", "history"],
   data() {
     return {
       friendInfo: false,
@@ -310,6 +310,37 @@ export default {
     friends(nw, old) {
       if (old.length == 0 && nw.length != 0) {
         this.friendsInit();
+      }
+    },
+    history(nw, old) {
+      if (old.length == 0 && nw.length != 0) {
+        nw.map((rmsg) => {
+          if (rmsg.t == this.user.id) {
+            console.log(rmsg);
+
+            // Message to me from my friend
+            var msg = {
+              id: rmsg._id.$oid,
+              message: rmsg.content,
+              from: rmsg.f,
+              seen: rmsg.seen,
+              created: rmsg.created.$date,
+              type: "r",
+            };
+          } else {
+            // Message from me to my friend
+            var msg = {
+              id: rmsg._id.$oid,
+              message: rmsg.content,
+              to: rmsg.t,
+              created: this.momentDate(rmsg.created.$date),
+              seen: rmsg.seen,
+              type: "s",
+            };
+          }
+          this.messages.push(msg);
+        });
+        console.log(this.messages);
       }
     },
   },
