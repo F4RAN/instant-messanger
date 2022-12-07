@@ -1,5 +1,17 @@
 # instant-messanger
-FEATURES:
+
+## Basic Features:
+
+implement a socket io messanger
+
+messanger can emit messages to server
+
+server can process and filter some words like profanity, etc.
+
+server emit back message to other end user (include filtered words),
+
+
+## Additional FEATURES:
 
 1- Message time, 
 
