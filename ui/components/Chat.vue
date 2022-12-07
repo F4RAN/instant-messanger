@@ -93,7 +93,7 @@ Enjoy! :) Don't forget to click the heart if you like it! -->
               <small
                 v-if="msg.type == 'r'"
                 style="position: absolute; right: 15px; bottom: 1px"
-                >12:39 PM</small
+                >{{ momentDate(msg.created) }}</small
               >
 
               <div v-if="msg.type == 's'" style="min-width: 50%"></div>
@@ -116,9 +116,9 @@ Enjoy! :) Don't forget to click the heart if you like it! -->
                     v-if="msg.type == 's'"
                     style="position: absolute; right: 15px; bottom: 1px"
                   >
-                    <small v-if="msg.id != 'Sending'" style="background: graysmoke"
-                      >12:39 PM</small
-                    >
+                    <small v-if="msg.id != 'Sending'" style="background: graysmoke">{{
+                      msg.created
+                    }}</small>
                     <i v-if="msg.id != 'Sending' && !msg.seen" class="fa fa-check"></i>
                     <i
                       v-if="msg.id != 'Sending' && msg.seen"
@@ -184,14 +184,39 @@ Enjoy! :) Don't forget to click the heart if you like it! -->
       <ul class="people">
         <li
           @click="selectFriend(friend)"
-          v-for="friend in friends"
+          v-for="(friend, index) in friends"
           :key="friend.phoneNumber"
           class="person"
           :class="friend == selectedFriend ? 'focus' : ''"
         >
           <span class="title">{{ friend.name }} </span>
-          <span class="time">2:50pm</span><br />
-          <span class="preview">What are you getting... Oh, oops...</span>
+          <span
+            class="time"
+            v-if="friendsListInfo.length > 0 && friendsListInfo[index].created"
+            >{{ momentDate(friendsListInfo[index].created) }}</span
+          ><br />
+          <div
+            style="
+              position: absolute;
+              background: #2176ff;
+              width: 20px;
+              height: 20px;
+              border-radius: 100%;
+              right: -10px;
+              text-align: center;
+              padding-top: 4px;
+            "
+            v-if="friendsListInfo.length > 0 && friendsListInfo[index].unreads > 0"
+          >
+            <span style="padding-top: 10px; font-size: 0.8em; color: white">
+              {{ friendsListInfo[index].unreads }}
+            </span>
+          </div>
+          <span class="preview">{{
+            friendsListInfo.length > 0
+              ? friendsListInfo[index].lastMessage
+              : "Start messaging"
+          }}</span>
         </li>
       </ul>
     </div>
@@ -199,6 +224,8 @@ Enjoy! :) Don't forget to click the heart if you like it! -->
 </template>
 
 <script>
+import moment from "moment";
+
 export default {
   name: "App",
   props: ["socket", "user", "friends"],
@@ -208,6 +235,7 @@ export default {
       friendPhoneNumber: "",
       friendName: "",
       friendsExist: false,
+      friendsListInfo: [],
       beforeAdded: false,
       selectedFriend: "",
       selectedMessages: [],
@@ -216,10 +244,15 @@ export default {
     };
   },
   methods: {
+    momentDate(d) {
+      return moment.utc(d).local().format("HH:mm A");
+    },
     selectFriend(friend) {
       if (friend.id == this.selectedFriend.id) return;
       this.selectedMessages = [];
       this.selectedFriend = friend;
+      let index = this.getIndexOfFriend(this.selectedFriend.id);
+      this.friendsListInfo[index].unreads = 0;
       this.messages.map((msg) => {
         if (msg.from == this.selectedFriend.id || msg.to == this.selectedFriend.id) {
           this.selectedMessages.push(msg);
@@ -234,6 +267,7 @@ export default {
         to: this.selectedFriend.id,
         index: this.selectedMessages.length,
         all_index: this.messages.length,
+        created: moment().format("HH:mm A"),
         seen: false,
         type: "s",
       };
@@ -254,11 +288,34 @@ export default {
         phoneNumber: this.friendPhoneNumber,
       });
     },
+    getIndexOfFriend(fr) {
+      for (let f in this.friends) {
+        if (this.friends[f].id == fr) {
+          return f;
+        }
+      }
+    },
+    friendsInit() {
+      this.friends.map((fr) => {
+        this.friendsListInfo.push({
+          id: fr.id,
+          lastMessage: "Start messaging",
+          created: null,
+          unreads: 0,
+        });
+      });
+    },
+  },
+  watch: {
+    friends(nw, old) {
+      if (old.length == 0 && nw.length != 0) {
+        this.friendsInit();
+      }
+    },
   },
   mounted() {
     this.socket.on("friend_seen", (id) => {
       this.selectedMessages.map((msg) => {
-        console.log(msg.to, id);
         if (msg.to == id) {
           msg.seen = true;
         }
@@ -293,12 +350,18 @@ export default {
         message: rmsg.message,
         from: rmsg.from,
         seen: false,
+        created: rmsg.created,
         type: "r",
       };
       this.messages.push(msg);
+      let index = this.getIndexOfFriend(rmsg.from);
+      this.friendsListInfo[index].lastMessage = rmsg.message;
+      this.friendsListInfo[index].created = rmsg.created;
       if (this.selectedFriend && this.selectedFriend.id == msg.from) {
         this.selectedMessages.push(msg);
         this.socket.emit("seen_message", msg);
+      } else {
+        this.friendsListInfo[index].unreads += 1;
       }
       var container = this.$refs["cont"];
       if (container) {

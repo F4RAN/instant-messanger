@@ -21,7 +21,7 @@ class MessageController:
         fr = fr_id
         to = str(me.id)
         un = sorted((str(fr), str(to)))
-        emit('friend_seen',to, room=un[0] + un[1])
+        emit('friend_seen', to, room=un[0] + un[1])
 
     def seen_message(self, params):
         msg = Message.objects(id=params['id']).first()
@@ -42,16 +42,21 @@ class MessageController:
             'message': self.cencor_message(params['message']),
             'from': str(fr.id),
             'seen': False,
+            'created': str(message.created),
             'to': 'me'
         }
         un = sorted((str(fr.id), str(to.id)))
-        emit("receive_message", json.loads(json.dumps(msg_schema)), room=un[0] + un[1], include_self=False)
+        try:
+            emit("receive_message", json.loads(json.dumps(msg_schema)), room=un[0] + un[1], include_self=False)
+        except:
+            pass
         msg_schema = {
             'id': str(message.id),
             'message': self.cencor_message(params['message']),
             'from': 'me',
             'index': params['index'],
             'all_index': params['index'],
+            'created': str(message.created),
             'to': str(fr.id),
         }
         emit("message_sent", json.loads(json.dumps(msg_schema)))
