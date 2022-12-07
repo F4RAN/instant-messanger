@@ -30,3 +30,5 @@ server emit back message to other end user (include filtered words),
 9- representation of sent messages by check sign and seen messages by double check sign,
 
 10- when you chatting with a friend messanger can keep the message from other friends,
+
+11- Reperesentation of user messages history
