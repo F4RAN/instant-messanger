@@ -2,33 +2,35 @@
 
 ## Basic FEATURES:
 
-implement a socket io messanger
+:white_check_mark:	implement a socket io messanger
 
-messanger can emit messages to server
+:white_check_mark:	messanger can emit messages to server
 
-server can process and filter some words like profanity, etc.
+:white_check_mark:	server can process and filter some words like profanity, etc.
 
-server emit back message to other end user (include filtered words),
+:white_check_mark:	server emit back message to other end user (include filtered words),
+
+:eight_pointed_black_star: stream proccessing cencor function 	
 
 
 ## Additional FEATURES:
 
-1- Messages stores in the database,
+:white_check_mark:	1- Messages stores in the database,
 
-2- Messages creation time, 
+:white_check_mark:	2- Messages creation time, 
 
-3- Representation of friends list,
+:white_check_mark:	3- Representation of friends list,
 
-4- latest message of each friend representation, 
+:white_check_mark:	4- latest message of each friend representation, 
 
-5- Register and Authentication with mobile number and set cookie for future login (JWT),
+:white_check_mark:	5- Register and Authentication with mobile number and set cookie for future login (JWT),
 
-6- Show unread messages on a counter in the corner of a friend's card,
+:white_check_mark:	6- Show unread messages on a counter in the corner of a friend's card,
 
-7- Add friends to the friends list with phone number, 
+:white_check_mark:	7- Add friends to the friends list with phone number, 
 
-9- representation of sent messages by check sign and seen messages by double check sign,
+:white_check_mark:	9- representation of sent messages by check sign and seen messages by double check sign,
 
-10- when you chatting with a friend messanger can keep the message from other friends,
+:white_check_mark:	10- when you chatting with a friend messanger can keep the message from other friends,
 
-11- Reperesentation of user messages history
+:white_check_mark:	11- Reperesentation of user messages history
