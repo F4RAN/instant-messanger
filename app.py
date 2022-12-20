@@ -1,7 +1,11 @@
+from json import dumps
+from time import sleep
+
 from flask import Flask, request
 from flask_socketio import SocketIO,emit
 from sockets.v1.socket import routes
 from config.mongo import connectIt
+from kafka import KafkaConsumer
 
 connectIt()
 app = Flask(__name__)
@@ -13,8 +17,9 @@ routes(sio)
 
 
 
-
-
+consumer = KafkaConsumer('test_topic')
+for msg in consumer:
+    print(msg)
 
 @sio.on('message')
 def handle_message(data):

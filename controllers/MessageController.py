@@ -88,6 +88,13 @@ class MessageController:
         emit("message_sent", json.loads(json.dumps(msg_schema)))
 
     def cencor_message(self, param):
+        """
+        producer split message and send to consumer
+        consumer cencor message and in a send result back
+        a new consumer check the result and aggregate it and send back to client
+        :param param: message
+        :return: cencored message
+        """
         x = param
         list = ['bi adab', 'bi sharaf', 'ahmaq', 'pedar sag', 'bi pedar', 'khar']
         for word in list:
