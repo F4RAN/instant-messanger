@@ -12,7 +12,7 @@
 
 :eight_pointed_black_star: stream proccessing cencor function 	
 
-:eight_pointed_black_star: spam detection (send more than 5 messages per second detected as a spam)
+:eight_pointed_black_star: spam detection function (send more than 5 messages per second detected as a spam)
 
 ## Additional FEATURES:
 
