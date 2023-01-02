@@ -12,7 +12,7 @@
 
 :eight_pointed_black_star: stream proccessing cencor function 	
 
-:white_check_mark: spam detection function (send more than 5 messages per second detected as a spam)
+:white_check_mark: spam detection function (send more than 5 messages in 5* second detected as a spam < * For test reasons you can change it in check_spam() function)
 
 ## Additional FEATURES:
 
