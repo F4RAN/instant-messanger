@@ -345,6 +345,9 @@ export default {
     },
   },
   mounted() {
+    this.socket.on("spam_detection", () => {
+      alert("Spam detected");
+    });
     this.socket.on("friend_seen", (id) => {
       this.selectedMessages.map((msg) => {
         if (msg.to == id) {

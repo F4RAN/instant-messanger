@@ -17,9 +17,9 @@ routes(sio)
 
 
 
-consumer = KafkaConsumer('test_topic')
-for msg in consumer:
-    print(msg)
+# consumer = KafkaConsumer('test_topic')
+# for msg in consumer:
+#     print(msg)
 
 @sio.on('message')
 def handle_message(data):
