@@ -1,12 +1,19 @@
 # instant-messanger
 ## Installation:
 ‍‍‍‍in the root folder:
+
 `pip3 install requirement.txt`
+
 and after installation:
+
 `flask run`
+
 in the /root/ui folder:
+
 `npm i`
+
 after installation:
+
 `npm run dev`
 
 ## Basic FEATURES:
