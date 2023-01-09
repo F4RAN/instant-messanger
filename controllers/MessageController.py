@@ -1,22 +1,29 @@
 import datetime
 import json
-import threading
-from queue import Queue
+import socket
+from time import sleep
+
 import flask_socketio
 from bson import json_util
+from confluent_kafka import Producer
 from flask import request
-from kafka import KafkaConsumer
 from mongoengine import Q
-
 from app import emit
-from config.kafka_class import KafkaClass
 from models.message import Message
-from models.socket import Socket
 from models.user import User
-import jwt
 
-kafka_class = KafkaClass()
-topic = KafkaClass().get_topic()
+topic = "INSTANT"
+conf = {'bootstrap.servers': "localhost:9092",
+        'client.id': socket.gethostname()}
+
+producer = Producer(conf)
+
+
+def acked(err, msg):
+    if err is not None:
+        print("Failed to deliver message: %s: %s" % (str(msg), str(err)))
+    else:
+        print("Message produced: %s" % (str(msg.value().decode())))
 
 
 def check_spam(message, msgs, time_limit):
@@ -33,50 +40,16 @@ class MessageController:
         fr = User.objects(token=token).first()
         msgs = Message.objects(f=str(fr.id)).order_by('-created')[0:5]
         to = User.objects(id=params['to']).first()
-        swears = ["bi adab", "avazi", "namard", "ahmaq", "bi pedar", "ahmagh", "sag", "khar", "olagh", "olaq"]
-        producer = kafka_class.create_producer()
+        # producer = kafka_class.create_producer()
         words_count = len(params['message'].split(" "))
         message = Message(f=str(fr.id), t=str(to.id),words_count=str(words_count), content=params['message'])
         if check_spam(message, msgs, 5):
             return emit("spam_detection")
         message.save()
         for index, word in enumerate(params['message'].split(" ")):
-            producer.send(topic, bytes(word, "utf-8"), key=bytes(str(message.id) + "|||" + str(index), "utf-8"))
-            producer.flush()
-        producer.close(timeout=200)
-        consumer = KafkaConsumer('MESSAGES',
-                                 group_id='chat',
-                                 bootstrap_servers=['localhost:9092'])
-        msg_pack = consumer.poll(timeout_ms=1000)
-        for tp, messages in msg_pack.items():
-            for word in messages:
-                id = word.key.decode("utf-8").split("|||")[0]
-                s = word.value.decode("utf-8")
-                if s in swears:
-                    msg = Message.objects(id=id).first()
-                    msg.content = msg.content.replace(s, "****")
-                    msg.save()
-
-
-        # for word in consumer:
-        #     print("here")
-        #     # consumer.commit()
-        #     s = word.value.decode("utf-8")
-        #     print(word.key,word.value)
-        #     i = word.key.decode("utf-8").split("|||")[1]
-        #     i = int(i)
-        #     id = word.key.decode("utf-8").split("|||")[0]
-        #     last_s = s
-        #     print(s)
-        #     if s in swears:
-        #         s = len(s) * "*"
-        #         msg = Message.objects(id=id).first()
-        #         msg.content = msg.content.replace(last_s,s)
-        #         msg.save()
-
-
-
-        consumer.close(autocommit=True)
+            producer.produce(topic, value=bytes(word, "utf-8"), key=bytes(str(message.id) + "|||" + str(index), "utf-8"),callback=acked)
+            producer.poll(1)
+        sleep(0.5)
         msg = Message.objects(id=str(message.id)).first()
         # filtered_message =  " ".join(result)
         msg_schema = {
