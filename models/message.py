@@ -5,6 +5,7 @@ from mongoengine import *
 class Message(Document):
     f = StringField(required=True)
     t = StringField(required=True)  # Person, group or channel id
+    words_count = StringField(default="N")  # Person, group or channel id
     content = StringField(required=True)
     has_multimedia = BooleanField(default=False)
     multimedia = StringField(default="")

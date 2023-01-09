@@ -1,23 +1,108 @@
 import datetime
 import json
-
+import threading
+from queue import Queue
 import flask_socketio
 from bson import json_util
 from flask import request
+from kafka import KafkaConsumer
 from mongoengine import Q
 
 from app import emit
+from config.kafka_class import KafkaClass
 from models.message import Message
 from models.socket import Socket
 from models.user import User
 import jwt
 
+kafka_class = KafkaClass()
+topic = KafkaClass().get_topic()
 
-def check_spam(message,msgs,time_limit):
+
+def check_spam(message, msgs, time_limit):
     return message.created - msgs[5]['created'] < datetime.timedelta(seconds=time_limit)
 
 
 class MessageController:
+
+
+
+    def send_message(self, params):
+        # Process message and some cencorship here
+        token = request.args.get('token')
+        fr = User.objects(token=token).first()
+        msgs = Message.objects(f=str(fr.id)).order_by('-created')[0:5]
+        to = User.objects(id=params['to']).first()
+        swears = ["bi adab", "avazi", "namard", "ahmaq", "bi pedar", "ahmagh", "sag", "khar", "olagh", "olaq"]
+        producer = kafka_class.create_producer()
+        words_count = len(params['message'].split(" "))
+        message = Message(f=str(fr.id), t=str(to.id),words_count=str(words_count), content=params['message'])
+        if check_spam(message, msgs, 5):
+            return emit("spam_detection")
+        message.save()
+        for index, word in enumerate(params['message'].split(" ")):
+            producer.send(topic, bytes(word, "utf-8"), key=bytes(str(message.id) + "|||" + str(index), "utf-8"))
+            producer.flush()
+        producer.close(timeout=200)
+        consumer = KafkaConsumer('MESSAGES',
+                                 group_id='chat',
+                                 bootstrap_servers=['localhost:9092'])
+        msg_pack = consumer.poll(timeout_ms=1000)
+        for tp, messages in msg_pack.items():
+            for word in messages:
+                id = word.key.decode("utf-8").split("|||")[0]
+                s = word.value.decode("utf-8")
+                if s in swears:
+                    msg = Message.objects(id=id).first()
+                    msg.content = msg.content.replace(s, "****")
+                    msg.save()
+
+
+        # for word in consumer:
+        #     print("here")
+        #     # consumer.commit()
+        #     s = word.value.decode("utf-8")
+        #     print(word.key,word.value)
+        #     i = word.key.decode("utf-8").split("|||")[1]
+        #     i = int(i)
+        #     id = word.key.decode("utf-8").split("|||")[0]
+        #     last_s = s
+        #     print(s)
+        #     if s in swears:
+        #         s = len(s) * "*"
+        #         msg = Message.objects(id=id).first()
+        #         msg.content = msg.content.replace(last_s,s)
+        #         msg.save()
+
+
+
+        consumer.close(autocommit=True)
+        msg = Message.objects(id=str(message.id)).first()
+        # filtered_message =  " ".join(result)
+        msg_schema = {
+            'id': str(message.id),
+            'message': msg.content,
+            'from': str(fr.id),
+            'seen': False,
+            'created': str(message.created),
+            'to': 'me'
+        }
+        un = sorted((str(fr.id), str(to.id)))
+        try:
+            emit("receive_message", json.loads(json.dumps(msg_schema)), room=un[0] + un[1], include_self=False)
+        except:
+            pass
+        msg_schema = {
+            'id': str(message.id),
+            'message': msg.content,
+            'from': 'me',
+            'index': params['index'],
+            'all_index': params['index'],
+            'created': str(message.created),
+            'to': str(fr.id),
+        }
+        emit("message_sent", json.loads(json.dumps(msg_schema)))
+
     def get_messages_history(self):
         token = request.args.get('token')
         me = User.objects(token=token).first()
@@ -58,52 +143,3 @@ class MessageController:
         msg.save()
         un = sorted((str(msg.f), str(msg.t)))
         emit('double_check', params['id'], room=un[0] + un[1])
-
-    def send_message(self, params):
-        # Process message and some cencorship here
-        token = request.args.get('token')
-        fr = User.objects(token=token).first()
-        msgs = Message.objects(f=str(fr.id)).order_by('-created')[0:5]
-        to = User.objects(id=params['to']).first()
-        message = Message(f=str(fr.id), t=str(to.id), content=self.cencor_message(params['message']))
-        if check_spam(message, msgs, 5):
-            print("here")
-            return emit("spam_detection")
-        message.save()
-        msg_schema = {
-            'id': str(message.id),
-            'message': self.cencor_message(params['message']),
-            'from': str(fr.id),
-            'seen': False,
-            'created': str(message.created),
-            'to': 'me'
-        }
-        un = sorted((str(fr.id), str(to.id)))
-        try:
-            emit("receive_message", json.loads(json.dumps(msg_schema)), room=un[0] + un[1], include_self=False)
-        except:
-            pass
-        msg_schema = {
-            'id': str(message.id),
-            'message': self.cencor_message(params['message']),
-            'from': 'me',
-            'index': params['index'],
-            'all_index': params['index'],
-            'created': str(message.created),
-            'to': str(fr.id),
-        }
-        emit("message_sent", json.loads(json.dumps(msg_schema)))
-
-    def cencor_message(self, param):
-        """
-        producer split message and send to consumer
-        consumer cencor message and in a send result back
-        a new consumer check the result and aggregate it and send back to client
-        :param param: message
-        :return: cencored message
-        """
-        x = param
-        list = ['bi adab', 'bi sharaf', 'ahmaq', 'pedar sag', 'bi pedar', 'khar']
-        for word in list:
-            x = x.replace(word, "*****")
-        return x
