@@ -64,15 +64,16 @@ you must run kafka_consumer.py file separately (in root):
 
 :white_check_mark:	11- Reperesentation of user messages history
 
-## Main programming languages, frameworks/libs and db:
-1- Python
+## Main programming languages, frameworks/libs and database:
 
-2- Javascript
+1- Python :electric_plug:	
 
-3- Vue/Nuxt
+2- Javascript :gun:	
 
-4- Flask
+3- Vue/Nuxt :framed_picture:	
 
-6- SocketIO
+4- Flask :computer:	
 
-7- MongoDB
+6- SocketIO :globe_with_meridians:	
+
+7- MongoDB :floppy_disk:	
