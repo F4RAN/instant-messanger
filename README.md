@@ -17,7 +17,7 @@ after installation:
 `npm run dev`
 
 ## Run project:
-you need install kafka in your os, then you should use these commands for create and moderate kafka topic:
+you need install Kafka in your os, then you should use these commands to create and moderate the Kafka topic:
 
 `kafka-topics --bootstrap-server 127.0.0.1:9092 --topic INSTANT --create --partitions 3 --replication-factor 1`
 
