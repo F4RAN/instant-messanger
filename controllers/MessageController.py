@@ -27,6 +27,9 @@ def acked(err, msg):
 
 
 def check_spam(message, msgs, time_limit):
+    print(len(msgs))
+    if len(msgs) < 5:
+        return False
     return message.created - msgs[5]['created'] < datetime.timedelta(seconds=time_limit)
 
 
@@ -43,7 +46,7 @@ class MessageController:
         # producer = kafka_class.create_producer()
         words_count = len(params['message'].split(" "))
         message = Message(f=str(fr.id), t=str(to.id),words_count=str(words_count), content=params['message'])
-        if check_spam(message, msgs, 5):
+        if check_spam(message, msgs, 10):
             return emit("spam_detection")
         message.save()
         for index, word in enumerate(params['message'].split(" ")):

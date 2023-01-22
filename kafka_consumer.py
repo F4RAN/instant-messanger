@@ -3,7 +3,9 @@ from confluent_kafka import Consumer, KafkaError, KafkaException
 from models.message import Message
 from config.mongo import connectIt
 connectIt()
-swears = ["biadab", "avazi", "namard", "ahmaq", "bi pedar", "ahmagh", "sag", "khar", "olagh", "olaq", "khare", "sage", "olaqe"]
+f = open("words.csv", "r")
+words = f.read()
+words = words.split(",\n")
 topic = "INSTANT"
 running = True
 MIN_COMMIT_COUNT = 1
@@ -41,7 +43,7 @@ def consume_loop(consumer, topics):
 def msg_process(msg):
     id = msg.key().decode("utf-8").split("|||")[0]
     s = msg.value().decode("utf-8")
-    if s in swears:
+    if s in words:
         dbmsg = Message.objects(id=id).first()
         dbmsg.content = dbmsg.content.replace(s, len(s)*"*")
         dbmsg.save()
