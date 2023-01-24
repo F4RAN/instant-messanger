@@ -27,10 +27,10 @@ def acked(err, msg):
 
 
 def check_spam(message, msgs, time_limit):
-    print(len(msgs))
     if len(msgs) < 5:
         return False
-    return message.created - msgs[5]['created'] < datetime.timedelta(seconds=time_limit)
+    print(msgs)
+    return message.created - msgs[4]['created'] < datetime.timedelta(seconds=time_limit)
 
 
 class MessageController:
@@ -40,7 +40,6 @@ class MessageController:
     def send_message(self, params):
         # Process message and some filter here
         token = request.args.get('token')
-        print(token)
         fr = User.objects(token=token).first()
         msgs = Message.objects(f=str(fr.id)).order_by('-created')[0:5]
         to = User.objects(id=params['to']).first()
