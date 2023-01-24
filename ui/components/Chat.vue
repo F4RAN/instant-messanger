@@ -53,7 +53,15 @@
           Sorry! <b>{{ friendPhoneNumber }}</b> is not registered in instant messanger :(
         </div>
         <div style="position: absolute; bottom: 0px; right: 0; min-height: 40px">
-          <button class="btn btn-primary mt-4" @click="$bvModal.hide('add')">OK</button>
+          <button
+            class="btn btn-primary mt-4"
+            @click="
+              $bvModal.hide('add');
+              reloadPage();
+            "
+          >
+            OK
+          </button>
         </div>
       </div>
     </b-modal>
@@ -244,6 +252,9 @@ export default {
     };
   },
   methods: {
+    reloadPage() {
+      console.log(this.friends);
+    },
     momentDate(d) {
       return moment.utc(d).local().format("HH:mm A");
     },
@@ -380,6 +391,7 @@ export default {
       this.messages[rmsg.all_index].message = rmsg.message;
     });
     this.socket.on("receive_message", (rmsg) => {
+      console.log(rmsg);
       let msg = {
         id: rmsg.id,
         message: rmsg.message,

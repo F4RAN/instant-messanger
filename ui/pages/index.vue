@@ -44,7 +44,6 @@ export default {
       console.log("server accepted your connection");
     });
     this.socket.on("rejected", () => {
-      this.$cookiz.set("auth_token", "");
       this.isRegistered = false;
       console.error("server rejected your connection (auth failed)");
     });

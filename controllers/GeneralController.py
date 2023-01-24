@@ -22,6 +22,8 @@ class GeneralController:
         user_schema = {'id': str(friend.id), 'name': friend.name, 'phoneNumber': friend.phoneNumber}
         user_schema = json.dumps(user_schema)
         user_schema = json.loads(user_schema)
+        un = sorted((str(user.id), str(friend.id)))
+        flask_socketio.join_room(un[0] + un[1])
         return emit('get_friend_info', json.loads(json.dumps({'status': True, 'exist': False, 'user': user_schema})))
 
     def get_friends(self):
