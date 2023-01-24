@@ -16,4 +16,12 @@ class AuthController:
             print(encoded_jwt)
             new_user['token'] = encoded_jwt
             new_user.save()
-            return emit("get_token", new_user.token)
+            emit("get_token", new_user.token)
+            initial_data = {
+                'id': str(new_user.id),
+                'name': new_user.name,
+                'phone_number': new_user.phoneNumber
+            }
+            new_socket = Socket(sid=request.sid, userId=str(new_user.id))
+            new_socket.save()
+            return emit("accepted",initial_data)

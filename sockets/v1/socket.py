@@ -5,7 +5,7 @@ from controllers.MessageController import MessageController
 
 def routes(sio):
     # Auth Routes
-    sio.on('register')(AuthController().register)
+    sio.on('register_user')(AuthController().register)
 
     # General Routes
     sio.on('connect')(GeneralController().connect)

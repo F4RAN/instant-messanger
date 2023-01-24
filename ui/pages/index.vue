@@ -1,12 +1,6 @@
 <template>
   <div>
-    <Register
-      @submit="
-        form = $event;
-        register();
-      "
-      v-if="!isRegistered"
-    ></Register>
+    <Register @submit="register($event)" v-if="!isRegistered"></Register>
     <Chat
       :socket="socket"
       :user="user"
@@ -32,9 +26,9 @@ export default {
     };
   },
   methods: {
-    register() {
-      console.log(this.form);
-      this.socket.emit("register", this.form);
+    register(form) {
+      console.log(form);
+      this.socket.emit("register_user", form);
     },
   },
   mounted() {

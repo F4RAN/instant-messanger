@@ -49,5 +49,5 @@ def msg_process(msg):
         dbmsg.save()
 
 
-
+print("Kafka consumer started successfully.")
 consume_loop(consumer, [topic])

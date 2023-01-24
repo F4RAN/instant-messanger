@@ -55,7 +55,9 @@ class GeneralController:
             elif len(my_user) != 0:
                 new_socket = Socket(sid=request.sid, userId=str(my_user[0]['_id']))
                 new_socket.save()
-            # Create common rooms between pair of friends
+            elif len(my_user) == 0:
+                return emit('rejected')
+
             for fr in my_user[0]['friends']:
                 un = sorted((str(my_user[0]['_id']), str(fr)))
                 flask_socketio.join_room(un[0] + un[1])
