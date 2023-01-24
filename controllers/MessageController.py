@@ -38,8 +38,9 @@ class MessageController:
 
 
     def send_message(self, params):
-        # Process message and some cencorship here
+        # Process message and some filter here
         token = request.args.get('token')
+        print(token)
         fr = User.objects(token=token).first()
         msgs = Message.objects(f=str(fr.id)).order_by('-created')[0:5]
         to = User.objects(id=params['to']).first()

@@ -261,6 +261,7 @@ export default {
       this.socket.emit("seen_friend_message", this.selectedFriend.id);
     },
     sendMessage() {
+      console.log(this.selectedFriend);
       let msg = {
         id: "Sending",
         message: this.message,
@@ -409,6 +410,12 @@ export default {
         if (!friend_info.exist) {
           this.friendName = friend_info.user.name;
           this.friends.push(friend_info.user);
+          this.friendsListInfo.push({
+            id: friend_info.user.id,
+            lastMessage: "Start messaging",
+            created: null,
+            unreads: 0,
+          });
         } else {
           this.beforeAdded = true;
         }

@@ -44,13 +44,13 @@ export default {
       console.log("server accepted your connection");
     });
     this.socket.on("rejected", () => {
+      this.$cookiz.set("auth_token", "");
       this.isRegistered = false;
       console.error("server rejected your connection (auth failed)");
     });
     this.socket.on("get_token", (token) => {
       this.$cookiz.set("auth_token", token);
-      this.token = token;
-      this.socket.emit("get_init_data");
+      window.location.reload();
     });
     this.socket.emit("get_friends");
     this.socket.on("friends_list", (friends) => {
