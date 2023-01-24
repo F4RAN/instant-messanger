@@ -64,6 +64,8 @@ you must run kafka_consumer.py file separately (in root):
 
 :white_check_mark:	11- Reperesentation of user messages history
 
+:white_check_mark:	12- Send offline messages to other
+
 ## Main programming languages, frameworks/libs and database:
 
 1- Python :electric_plug:	
