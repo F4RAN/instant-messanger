@@ -8,7 +8,7 @@ from bson import json_util
 from confluent_kafka import Producer
 from flask import request
 from mongoengine import Q
-from app import emit
+from flask_socketio import emit
 from models.message import Message
 from models.user import User
 

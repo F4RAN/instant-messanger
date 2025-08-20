@@ -1,81 +1,201 @@
-# instant-messanger
-## Installation:
-‍‍‍‍in the root folder:
+# Instant Messenger (Backend + Stream Processing)
 
-`pip3 install requirement.txt`
+Real‑time chat service with a web frontend and a backend that streams messages via Kafka. Built to demonstrate production‑grade event pipelines, scalable messaging, and a clean API surface.
 
-and after installation:
+## Screenshots
 
-`flask run`
+![Chat Environment](screenshots/chat_environment.png)
+*Overall chat environment with friends list and active conversation*
 
-in the /root/ui folder:
+![Peer-to-Peer Chat](screenshots/P2P_chat.png)
+*Direct messaging between two users in real time*
 
-`npm i`
+![Message Example](screenshots/message_example.png)
+*Message delivery with status indicators (sent/seen)*
 
-after installation:
+![Stream Processing ("equal" word)](screenshots/stream_processing_equal.png)
+*Kafka-driven profanity filtering using words from `words.csv`*
 
-`npm run dev`
+![Other Side – Stream Processing](screenshots/sp_other_side.png)
+*Filtered message in the sender side updated after stream processing*
 
-## Run project:
-you need to install Kafka on your os, then you should use these commands to create and moderate the Kafka topic:
+## Features
+- Real‑time one‑to‑one messaging with Socket.IO
+- Message persistence and retrieval
+- Stream processing pipeline (Kafka) for message filtering and spam detection
+- JWT-based authentication with phone number registration
+- Friend management and contact discovery
+- Message status indicators (sent/seen)
+- Offline message delivery
+- Profanity filtering and spam detection
+- Unread message counters
+- Message history and chat persistence
 
-`kafka-topics --bootstrap-server 127.0.0.1:9092 --topic INSTANT --create --partitions 3 --replication-factor 1`
+## Tech Stack
+- **Backend:** Python / Flask
+- **Streaming:** Kafka (topic: `INSTANT`)
+- **Storage:** MongoDB (messages, users, sessions)
+- **Frontend:** Vue.js / Nuxt.js with Socket.IO
+- **Real-time:** Socket.IO for WebSocket communication
+- **Auth:** JWT tokens with cookie-based sessions
 
-you should see "INSTANT" topic in topics list:
+## Architecture
+- Web (Vue/Nuxt) → API (Flask/Socket.IO)
+- API writes to MongoDB and publishes to **Kafka**
+- Kafka consumer handles message filtering, spam detection, and processing
+- Web subscribes to real-time updates via Socket.IO WebSocket connection
 
-`kafka-topics --list --bootstrap-server 127.0.0.1:9092`
+## Getting Started
 
-you must run kafka_consumer.py file separately (in root):
+### Prerequisites
+- Python 3.9+
+- Node.js 16+
+- MongoDB
+- Kafka with Zookeeper
 
-`python3 kafka_consumer.py`
-## Basic FEATURES:
+### Installation
+```bash
+git clone https://github.com/F4RAN/instant-messanger
+cd instant-messanger
 
-:white_check_mark:	implement a socket io messanger
+# Backend setup
+pip3 install -r requirements.txt
 
-:white_check_mark:	messanger can emit messages to server
+# Frontend setup
+cd ui
+npm install
+cd ..
+```
 
-:white_check_mark:	server can process and filter some words like profanity, etc.
+### Running the Application
 
-:white_check_mark:	server emit back message to other end user (include filtered words),
+1. **Start MongoDB:**
+```bash
+# Option 1: Using brew services
+brew services start mongodb-community
 
-:white_check_mark: stream proccessing cencor function 	
+# Option 2: Manual start
+mongod --config /opt/homebrew/etc/mongod.conf --fork
+```
 
-:white_check_mark: spam detection function (send more than 5 messages in 5* second detected as a spam < * For test reasons you can change it in check_spam() function)
+2. **Start Kafka & Zookeeper:**
+```bash
+# Terminal 1: Start Zookeeper
+zookeeper-server-start /opt/homebrew/etc/kafka/zookeeper.properties
 
-## Additional FEATURES:
+# Terminal 2: Start Kafka
+kafka-server-start /opt/homebrew/etc/kafka/server.properties
 
-:white_check_mark:	1- Messages stores in the database,
+# Terminal 3: Create topic
+kafka-topics --bootstrap-server localhost:9092 --topic INSTANT --create --partitions 3 --replication-factor 1
+```
 
-:white_check_mark:	2- Messages creation time, 
+3. **Start Application Services:**
+```bash
+# Terminal 4: Start Kafka consumer (for message filtering)
+python3 kafka_consumer.py
 
-:white_check_mark:	3- Representation of friends list,
+# Terminal 5: Start Flask backend
+python3 app.py
 
-:white_check_mark:	4- latest message of each friend representation, 
+# Terminal 6: Start frontend
+cd ui
+npm run dev
+```
 
-:white_check_mark:	5- Register and Authentication with mobile number and set cookie for future login (JWT),
+4. **Access the Application:**
+- Frontend: http://localhost:3000
+- Backend: http://localhost:5000
 
-:white_check_mark:	6- Show unread messages on a counter in the corner of a friend's card,
 
-:white_check_mark:	7- Add friends to the friends list with phone number, 
 
-:white_check_mark:	9- representation of sent messages by check sign and seen messages by double check sign,
+## Configuration
 
-:white_check_mark:	10- when you chatting with a friend messanger can keep the message from other friends,
+**words.csv**: Contains filtered words list for profanity detection. Words in this file are automatically replaced with asterisks (*) in messages via the Kafka stream processing pipeline.
 
-:white_check_mark:	11- Reperesentation of user messages history
+Environment setup:
+```
+# MongoDB Configuration
+MONGO_HOST=127.0.0.1
+MONGO_PORT=27017
+MONGO_DB=instant_messenger
 
-:white_check_mark:	12- Send offline messages to other
+# Kafka Configuration  
+KAFKA_BROKER=localhost:9092
+KAFKA_TOPIC=INSTANT
 
-## Main programming languages, frameworks/libs and database:
+# JWT Configuration
+JWT_SECRET=very_secure_secret
 
-1- Python :electric_plug:	
+# Flask Configuration
+FLASK_PORT=5000
+SECRET_KEY=secret!
+```
 
-2- Javascript :gun:	
+## WebSocket API
 
-3- Vue/Nuxt :framed_picture:	
+Authentication:
+```
+register_user → {name, phoneNumber} → returns token
+connect → requires ?token=<jwt_token> → returns user data or rejection
+disconnect → close connection
+```
 
-4- Flask :computer:	
+Friend Management:
+```
+check_friend_phone → {token, phoneNumber} → add friend by phone
+get_friends → requires ?token=<jwt_token> → returns friends list
+```
 
-6- SocketIO :globe_with_meridians:	
+Messaging:
+```
+send_message → {to, message, index} → sends message with spam detection
+seen_message → {id} → mark specific message as seen  
+seen_friend_message → <friend_id> → mark all messages from friend as seen
+get_messages_history → requires ?token=<jwt_token> → returns chat history (last 10 per friend)
+```
 
-7- MongoDB :floppy_disk:	
+Events Received:
+```
+get_token → JWT token after registration
+accepted → user data after successful connection
+rejected → connection denied
+receive_message → incoming message from friend
+message_sent → confirmation of sent message
+spam_detection → message blocked due to spam
+friends_list → list of user's friends
+messages_history → chat history data
+double_check → message seen confirmation
+friend_seen → friend has seen your messages
+get_friend_info → friend lookup result
+```	
+
+## Roadmap
+
+- Now (UX polish)
+  - Typing indicators (ephemeral Socket.IO start/stop typing events)
+  - Enhance read receipts (delivered vs read, timestamps, per-thread last seen)
+  - Presence (online/offline with heartbeat pings)
+  - Rate limiting on `send_message` to mitigate abuse
+
+- Next (Search & history)
+  - MongoDB text index on `content` and `created`
+  - Search endpoint (WS/HTTP) with pagination
+  - Tuned history retrieval (window per friend, server-side limits)
+
+- Scale & reliability
+  - Socket.IO Redis adapter + sticky sessions for horizontal API pods
+  - Kafka multi-broker (replication factor ≥ 3), topic retention/compaction policies
+  - Observability: structured logs, metrics, basic tracing
+
+- Security
+  - JWT secret rotation and refresh-token flow
+  - Input validation and stricter CORS settings
+
+- CI/CD & DevEx
+  - GitHub Actions: lint/test (Python/Node), build UI, Docker image
+  - Docker Compose for local stack; optional Dev Container
+
+## License
+
+MIT

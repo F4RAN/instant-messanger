@@ -1,5 +1,5 @@
 from flask import request
-from app import emit
+from flask_socketio import emit
 from models.socket import Socket
 from models.user import User
 import jwt
